@@ -7,9 +7,6 @@ from openai import OpenAI
 from typing import Tuple
 import os
 
-
-openai_api_key=os.environ.get("OPENAI_API_KEY")
-
 # Load and initialize data
 def load_qa_data():
     qa_data = {
@@ -46,11 +43,11 @@ class SupportAgent:
         self.answers = [qa["answer"] for qa in qa_data["questions"]]
         self.vectorizer = TfidfVectorizer()
         self.question_vectors = self.vectorizer.fit_transform(self.questions)
-        self.openai_api_key = openai_api_key
+        self.llm = OpenAI(api_key=openai_api_key)
 
     def get_gpt_response(self, question: str) -> str:
         try:
-            response = openai.ChatCompletion.create(
+            response = self.llm.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system",
@@ -96,6 +93,8 @@ def main():
 
     # User input
     user_question = st.text_input("Your question:", key="user_input")
+
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
 
     if st.button("Ask") and openai_api_key:
         if user_question:
